@@ -30,7 +30,7 @@ class SchoolManager(BaseUserManager):
     
 
 #This creates a new model called School.
-#Instead of inheriting from the normal Django Model, it inherits from:
+#Instead of inheriting from the normal Django Model, it inherits from: AbstractBaseUser
 #This model can authenticate (log in) like a user.
 class School (AbstractBaseUser):
     name=models.CharField(max_length=50, null=False, blank=False)
