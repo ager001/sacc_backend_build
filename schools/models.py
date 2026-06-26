@@ -13,3 +13,17 @@ class SchoolManager(BaseUserManager):
         #if no email provided, raise ValueError, if yes execute next line
         if not email:
             raise ValueError("Kindly input your email for your email is required")
+        # self refers to the current manager (SchoolManager).
+        # inshort it is simply BaseUserManager.create() behind the scenes
+        #normalize_email() cleans the email before saving it.
+        # *args This passes along any extra unnamed arguments.
+        user=self.create(email=self.normalize_email(email), *args, **kwargs)
+        #Django hashes (encrypts) the password before saving it.
+        user.set_password(password)
+        #This gives the user staff privileges.
+        user.is_staff=True
+        #writes the record into the database.
+        user.save(using=self._db)
+        #The function is finished.It returns the newly created School object.
+        #That means another part of your application can immediately use it.
+        return user
