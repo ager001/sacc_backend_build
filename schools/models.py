@@ -66,7 +66,7 @@ class School(AbstractBaseUser, PermissionsMixin):
 
     box = models.IntegerField()
 
-    address = models.IntegerField()
+    address = models.CharField(max_length=15)
         
 
     phone_number = models.CharField(
