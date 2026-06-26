@@ -1,48 +1,104 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 
-# A manager talks to the database, they answer CRUD operations questions
-# SchoolManager inherits everything from BaseUserManager
-# Now SchoolManager already knows many authentication-related operations.
-# We only need to customize what we want
+
+# A manager talks to the database.
+# It is responsible for creating users and superusers.
 class SchoolManager(BaseUserManager):
-    # Below we have defined how a normal user should be created 
-    # Required pieces of information is; email(instead of username), password=None simply stores password safely
-    # args=Accept extra unnamed arguments kwargs=Accept extra named arguments.
-    def create_user(self, email, password=None, *args, **kwargs):
-        #if no email provided, raise ValueError, if yes execute next line
-        if not email:
-            raise ValueError("Kindly input your email for your email is required")
-        # self refers to the current manager (SchoolManager).
-        # inshort it is simply BaseUserManager.create() behind the scenes
-        #normalize_email() cleans the email before saving it.
-        # *args This passes along any extra unnamed arguments.
-        user=self.create(email=self.normalize_email(email), *args, **kwargs)
-        #Django hashes (encrypts) the password before saving it.
-        user.set_password(password)
-        #This gives the user staff privileges.
-        user.is_staff=True
-        #writes the record into the database.
-        user.save(using=self._db)
-        #The function is finished.It returns the newly created School object.
-        #That means another part of your application can immediately use it.
-        return user
-    
 
-#This creates a new model called School.
-#Instead of inheriting from the normal Django Model, it inherits from: AbstractBaseUser
-#This model can authenticate (log in) like a user.
-class School (AbstractBaseUser):
-    name=models.CharField(max_length=50, null=False, blank=False)
-    email=models.EmailField(unique=True, null=False)
-    box=models.IntegerField(blank=False, null=False)
-    address=models.IntegerField(blank=False, null=False)
-    phone_number=models.CharField(blank=False, null=False, max_length=15)
-    town=models.CharField(blank=False, null=False, max_length=100)
-    is_active=models.BooleanField(default=True)
-      
+    # Creates a normal school user
+    def create_user(self, email, password=None, *args, **kwargs):
+        if not email:
+            raise ValueError("Kindly input your email because it is required.")
+
+        # Create the model instance
+        user = self.model(
+            email=self.normalize_email(email),
+            *args,
+            **kwargs
+        )
+
+        # Hash the password
+        user.set_password(password)
+
+        # Save to the database
+        user.save(using=self._db)
+
+        return user
+
+    # Creates an administrator
+    def create_superuser(self, email, password=None, **extra_fields):
+
+        if not email:
+            raise ValueError("Superusers must have an email address.")
+
+        # Required admin permissions
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        # Safety checks
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        return self.create_user(
+            email=email,
+            password=password,
+            **extra_fields
+        )
+
+
+# Custom authentication model
+class School(AbstractBaseUser, PermissionsMixin):
+
+    name = models.CharField(max_length=50)
+
+    email = models.EmailField(
+        unique=True
+    )
+
+    box = models.IntegerField()
+
+    address = models.IntegerField()
+        
+
+    phone_number = models.CharField(
+        max_length=15
+    )
+
+    town = models.CharField(
+        max_length=100
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    is_staff = models.BooleanField(
+        default=False
+    )
+
+    # The field used for authentication
     USERNAME_FIELD = "email"
-    objects=SchoolManager()
-    
+
+    # Fields required when creating a superuser
+    REQUIRED_FIELDS = [
+        "name",
+        "box",
+        "address",
+        "phone_number",
+        "town",
+    ]
+
+    # Attach the custom manager
+    objects = SchoolManager()
+
     def __str__(self):
-        return f"School Name:{self.name} Phone:{self.phone_number}"
+        return f"{self.name} ({self.email})"

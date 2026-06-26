@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'schools',
     
     
     # Third-party packages
@@ -153,3 +154,5 @@ SPECTACULAR_SETTINGS = {
 # ─── Media files (uploaded PDFs) ─────────────────────────────────────────────
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+AUTH_USER_MODEL = "schools.School"
