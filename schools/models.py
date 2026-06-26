@@ -38,7 +38,7 @@ class School (AbstractBaseUser):
     box=models.IntegerField(blank=False, null=False)
     address=models.IntegerField(blank=False, null=False)
     phone_number=models.CharField(blank=False, null=False, max_length=15)
-    town=models.CharField(blank=False, null=False max_length=100)
+    town=models.CharField(blank=False, null=False, max_length=100)
     is_active=models.BooleanField(default=True)
       
     USERNAME_FIELD = "email"
