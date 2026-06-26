@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import School
 
 
+# "Automatically create serializer fields from the School model."
 class SchoolRegistrationSerializer(serializers.ModelSerializer):
 
     # Password should only be accepted when creating a school.
@@ -26,6 +27,14 @@ class SchoolRegistrationSerializer(serializers.ModelSerializer):
             "town",
             "password",
         ]
+        
+    # Validate
+    def validate_email(self, value):
+        if School.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "Email already exists"
+            )
+        return value
 
     # Called after validation succeeds.
     def create(self, validated_data):
@@ -41,3 +50,10 @@ class SchoolRegistrationSerializer(serializers.ModelSerializer):
         )
 
         return school
+    
+    
+# "Automatically create serializer fields from the School model."    
+class SchoolListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=School
+        fields="__all__"
