@@ -27,3 +27,22 @@ class SchoolManager(BaseUserManager):
         #The function is finished.It returns the newly created School object.
         #That means another part of your application can immediately use it.
         return user
+    
+
+#This creates a new model called School.
+#Instead of inheriting from the normal Django Model, it inherits from:
+#This model can authenticate (log in) like a user.
+class School (AbstractBaseUser):
+    name=models.CharField(max_length=50, null=False, blank=False)
+    email=models.EmailField(unique=True, null=False)
+    box=models.IntegerField(blank=False, null=False)
+    address=models.IntegerField(blank=False, null=False)
+    phone_number=models.CharField(blank=False, null=False, max_length=15)
+    town=models.CharField(blank=False, null=False max_length=100)
+    is_active=models.BooleanField(default=True)
+      
+    USERNAME_FIELD = "email"
+    objects=SchoolManager()
+    
+    def __str__(self):
+        return f"School Name:{self.name} Phone:{self.phone_number}"
