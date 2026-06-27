@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -136,8 +137,26 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+}
+
+
+SIMPLE_JWT = {
+    # Access tokens expire quickly for better security.
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+
+    # Refresh tokens last longer so users don't need to log in often.
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+
+    # Rotate refresh tokens when they are used.
+    "ROTATE_REFRESH_TOKENS": True,
+
+    # Invalidate the old refresh token after rotation.
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 # ─── CORS ────────────────────────────────────────────────────────────────────
