@@ -19,10 +19,12 @@ class LoginSerializer(serializers.Serializer):
         # below we are taking out the email and password from the backpack
         email = attrs.get("email")
         password = attrs.get("password")
+        # the request receives the current HTTP request that the view passed into the serializer via context
+        request = self.context.get("request")
         # below runs a DRF function that simply means "only verify identity"
         # expects three things; request, email, password
         school = authenticate(
-            request=self.context.get("request"),
+            request=request,
             email=email,
             password=password
         )
