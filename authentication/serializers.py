@@ -8,6 +8,8 @@ from rest_framework import serializers
 class LoginSerializer(serializers.Serializer):
     
     email = serializers.EmailField()
+    # write_only=True simply means when we return the data DRF should automatically hide the password
+    # trim_whitespace=False simply means we simply tell DRF to not modify the password and authenticate with the characters supplied
     password = serializers.CharField(
         write_only=True,
         trim_whitespace=False,
