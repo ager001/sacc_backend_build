@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     
     # Third-party packages
     'rest_framework',
+    "rest_framework_simplejwt.token_blacklist",
     'corsheaders',
     'drf_spectacular',
 ]
@@ -157,6 +158,8 @@ SIMPLE_JWT = {
 
     # Invalidate the old refresh token after rotation.
     "BLACKLIST_AFTER_ROTATION": True,
+    # Important info for monitoring activity and troubleshooting
+    "UPDATE_LAST_LOGIN": True,
 }
 
 # ─── CORS ────────────────────────────────────────────────────────────────────
