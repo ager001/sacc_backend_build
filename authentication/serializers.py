@@ -43,3 +43,10 @@ class LoginSerializer(serializers.Serializer):
         attrs["school"] = school
 
         return attrs
+    
+# This is the logout serializer code
+class LogoutSerializer(serializers.Serializer):
+    # logout serializer only has one field which is written below
+    # below receives the refresh token from frontend and validates if it exists
+    refresh = serializers.CharField()
+    

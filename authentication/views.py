@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import LoginSerializer
+from .serializers import LogoutSerializer
 
 # LoginAPIView endpoint gets created
 class LoginAPIView(APIView):
@@ -43,4 +44,33 @@ class LoginAPIView(APIView):
                 },
                 status=status.HTTP_200_OK,
         )
+
+# creation of the LogoutAPI
+class LogoutAPIView(APIView):
+    # only authenticated people
+    permission_classes = [permissions.IsAuthenticated]
+    # logout is a post method 
+    # we're changing the server's state by blacklisting a token.
+    def post(self, request):
+        #The serializer performs validation
+        serializer = LogoutSerializer(
+         data=request.data
+       ) 
+        # if serializer is valid proceed 
+        serializer.is_valid(
+            raise_exception=True
+        )
+        # retrieval of the token
+        refresh = serializer.validated_data["refresh"]    
+        # Simple JWT opens the envelope and creates a Python object representing that token
+        token = RefreshToken(refresh)    
+        # Now we add the token to the blacklist app 
+        token.blacklist()
         
+        # we now send a response 
+        return Response(
+            {
+                "message":"Logged out successfully."
+            },
+            status=status.HTTP_200_OK
+        )
