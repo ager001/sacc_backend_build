@@ -12,6 +12,7 @@ class LoginAPIView(APIView):
     
     @extend_schema(
         # code below simply means the client must send data that matches this serializer
+        # later we will create it in our serializers for the responses
             request=LoginSerializer,
             # description of what our API should return
             responses={
@@ -55,7 +56,7 @@ class LoginAPIView(APIView):
             # Authentication is already finished.
             # We are simply creating identity cards.
             refresh = RefreshToken.for_user(school)
-            # below we now return the response of two tokens
+            # below we now return the response of two tokens; later on we will create it in the serializers field
             # The refresh token owns the access token.
             # str(refresh) converts the token into the compact JWT string that can be sent over HTTP.
             # remember refresh tokens are always python objects 
