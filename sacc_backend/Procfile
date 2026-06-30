@@ -1,0 +1,1 @@
+web: gunicorn sacc_backend.wsgi
