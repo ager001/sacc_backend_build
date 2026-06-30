@@ -20,9 +20,11 @@ from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
+from .views import home
 
 
 urlpatterns = [
+    path("", home),
     path('admin/', admin.site.urls),
     path('api/schools/', include("schools.urls")),
     path("auth/",include("authentication.urls")),
