@@ -34,6 +34,7 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "sacc-backend-build.onrender.com",
 ]
 
 
@@ -177,6 +178,7 @@ SIMPLE_JWT = {
 # ─── CORS ────────────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',    # Next.js dev server
+    'https://sacc-backend-build.onrender.com/'
 ]
 
 # ─── API Documentation (drf-spectacular) ─────────────────────────────────────
