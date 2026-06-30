@@ -95,7 +95,7 @@ WSGI_APPLICATION = 'sacc_backend.wsgi.application'
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=config("DATABASE_URL")
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
     )
 }
 
@@ -178,7 +178,7 @@ SIMPLE_JWT = {
 # ─── CORS ────────────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',    # Next.js dev server
-    'https://sacc-backend-build.onrender.com/'
+    'https://sacc-backend-build.onrender.com'
 ]
 
 # ─── API Documentation (drf-spectacular) ─────────────────────────────────────
