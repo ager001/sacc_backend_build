@@ -2,37 +2,64 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import LoginSerializer
-from .serializers import LogoutSerializer
+from drf_spectacular.utils import extend_schema
+from .serializers import LoginSerializer, LogoutSerializer
 
 # LoginAPIView endpoint gets created
 class LoginAPIView(APIView):
     # In permissions everyone who can access the endpoint can login
     permission_classes = [permissions.AllowAny]
+    
+    @extend_schema(
+        # code below simply means the client must send data that matches this serializer
+            request=LoginSerializer,
+            # description of what our API should return
+            responses={
+                200: {
+                    "type": "object",
+                    "properties": {
+                        "refresh": {"type": "string"},
+                        "access": {"type": "string"},
+                        "school": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "name": {"type": "string"},
+                                "email": {"type": "string"},
+                            },
+                        },
+                    },
+                },
+            },
+            # This text appears in Swagger below the endpoint.
+            description="Authenticate a school administrator and return JWT access and refresh tokens."
+        )
+   
+    
     # used post for in login the user send sensitive information
     def post(self, request):
         # creation of the serializer
         # request.data comes from the client.
         # request comes from us.
-        serializer = LoginSerializer(
+            serializer = LoginSerializer(
             data=request.data,
             context={
                 "request": request
             }
         
         )
-        # after finding the validation is valid, authenticate()
-        serializer.is_valid(raise_exception=True)
-        #  it is same as opening the backpack "attrs" and taking out the authenticated school.
-        school = serializer.validated_data["school"]
-        # Authentication is already finished.
-        # We are simply creating identity cards.
-        refresh = RefreshToken.for_user(school)
-        # below we now return the response of two tokens
-        # The refresh token owns the access token.
-        # str(refresh) converts the token into the compact JWT string that can be sent over HTTP.
-        # remember refresh tokens are always python objects 
-        return Response(
+            # after finding the validation is valid, authenticate()
+            serializer.is_valid(raise_exception=True)
+            #  it is same as opening the backpack "attrs" and taking out the authenticated school.
+            school = serializer.validated_data["school"]
+            # Authentication is already finished.
+            # We are simply creating identity cards.
+            refresh = RefreshToken.for_user(school)
+            # below we now return the response of two tokens
+            # The refresh token owns the access token.
+            # str(refresh) converts the token into the compact JWT string that can be sent over HTTP.
+            # remember refresh tokens are always python objects 
+            return Response(
                 {
                     "refresh": str(refresh),
                     "access": str(refresh.access_token),
@@ -49,6 +76,21 @@ class LoginAPIView(APIView):
 class LogoutAPIView(APIView):
     # only authenticated people
     permission_classes = [permissions.IsAuthenticated]
+    # also here we extend the schema 
+    @extend_schema(
+                request=LogoutSerializer,
+                responses={
+                    200: {
+                        "type": "object",
+                        "properties": {
+                            "message": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                description="Blacklist the refresh token and log out the authenticated user."
+            )
     # logout is a post method 
     # we're changing the server's state by blacklisting a token.
     def post(self, request):
