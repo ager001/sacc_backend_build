@@ -169,11 +169,26 @@ CORS_ALLOWED_ORIGINS = [
 
 # ─── API Documentation (drf-spectacular) ─────────────────────────────────────
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'SACC API',
-    'DESCRIPTION': 'School Academic & Curriculum Coordinator — Backend API',
-    'VERSION': '1.0.0',
-}
+    "TITLE": "SACC API",
+    "DESCRIPTION": "School Academic & Curriculum Coordinator — Backend API",
+    "VERSION": "1.0.0",
 
+    "COMPONENT_SPLIT_REQUEST": True,
+
+    "SECURITY": [
+        {
+            "BearerAuth": [],
+        }
+    ],
+
+    "SECURITY_SCHEMES": {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    },
+}
 # ─── Media files (uploaded PDFs) ─────────────────────────────────────────────
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
