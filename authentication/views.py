@@ -152,21 +152,27 @@ class VerifySchoolView(APIView):
                         "name": {
                             "type": "string"
                         },
-                        "email": {
-                            "type": "string"
-                        },
+                        # ... keep any other existing school properties here ...
                     },
-                },
+                    "required": ["id", "name"]
+                }
             },
+            "required": ["message", "school"]
         },
+        400: {
+            "description": "Validation error – invalid credentials or bad request data.",
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {"type": "string"}
+            },
+            "example": {
+                "school_id": ["This field is required."],
+                "password": ["Invalid school credentials."]
+            }
+        },
+        
     },
-    summary="Verify School",
-    description="""
-    Verify that the school exists and the supplied
-    password is correct before proceeding to role
-    authentication.
-    """,
-    tags=["Authentication"],
 )
     def post(self, request):
         # here we verify the school credentials by using the VerifySchoolSerializer to validate the data sent from the frontend

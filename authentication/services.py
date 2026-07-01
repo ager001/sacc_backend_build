@@ -22,10 +22,10 @@ class AuthenticationService:
             raise ValidationError(
                 "Invalid email or password."
             )
-        # if the school is not active raise a validation error
+        # if the school is not active raise the same validation error to avoid account enumeration
         if not school.is_active:
             raise ValidationError(
-                "This school account has been deactivated."
+                "Invalid email or password."
             )
         # finally return the school object if all checks pass
         return school
