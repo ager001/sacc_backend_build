@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
-from .serializers import LoginSerializer, LogoutSerializer
+from .serializers import LoginSerializer, LogoutSerializer, CurrentSchoolSerializer
 
 # LoginAPIView endpoint gets created
 class LoginAPIView(APIView):
@@ -117,3 +117,12 @@ class LogoutAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+        
+        
+class CurrentUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = CurrentSchoolSerializer(request.user)
+
+        return Response(serializer.data)

@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
+from schools.models import School
+
 
 # This class validates credentials before creation of JWT tokens
 # this is a different serializer since it doesn't create or update database
@@ -50,3 +52,15 @@ class LogoutSerializer(serializers.Serializer):
     # below receives the refresh token from frontend and validates if it exists
     refresh = serializers.CharField()
     
+    
+    
+
+
+class CurrentSchoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = School
+        fields = [
+            "id",
+            "name",
+            "email",
+        ]
