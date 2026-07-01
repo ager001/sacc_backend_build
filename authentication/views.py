@@ -171,17 +171,7 @@ class VerifySchoolView(APIView):
                 "password": ["Invalid school credentials."]
             }
         },
-        403: {
-            "description": "Forbidden – credentials are valid but the school is not allowed to use this service.",
-            "type": "object",
-            "properties": {
-                "detail": {"type": "string"}
-            },
-            "required": ["detail"],
-            "example": {
-                "detail": "You do not have permission to perform this action."
-            }
-        },
+        
     },
 )
     def post(self, request):
