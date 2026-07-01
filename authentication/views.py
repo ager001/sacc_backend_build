@@ -2,8 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
+from .services import authentication_service
 from drf_spectacular.utils import extend_schema
-from .serializers import LoginSerializer, LogoutSerializer
+from .serializers import LoginSerializer, LogoutSerializer, CurrentSchoolSerializer, VerifySchoolSerializer
 
 # LoginAPIView endpoint gets created
 class LoginAPIView(APIView):
@@ -116,4 +117,79 @@ class LogoutAPIView(APIView):
                 "message":"Logged out successfully."
             },
             status=status.HTTP_200_OK
+        )
+        
+# this is the current user view that returns the details of the currently authenticated user        
+class CurrentUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+# this is the get method that returns the details of the currently authenticated user
+    def get(self, request):
+        serializer = CurrentSchoolSerializer(request.user)
+
+        return Response(serializer.data)
+    
+    
+# verify school view that verifies the school credentials
+class VerifySchoolView(APIView):
+    # below means that anyone can access this endpoint without authentication
+    permission_classes = [permissions.AllowAny]
+    # below is the post method that verifies the school credentials
+    @extend_schema(
+    request=VerifySchoolSerializer,
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "school": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "email": {
+                            "type": "string"
+                        },
+                    },
+                },
+            },
+        },
+    },
+    summary="Verify School",
+    description="""
+    Verify that the school exists and the supplied
+    password is correct before proceeding to role
+    authentication.
+    """,
+    tags=["Authentication"],
+)
+    def post(self, request):
+        # here we verify the school credentials by using the VerifySchoolSerializer to validate the data sent from the frontend
+        serializer = VerifySchoolSerializer(
+            data=request.data
+        )
+        # we now verify if the serializer is valid, if not it will raise an exception
+        serializer.is_valid(
+            raise_exception=True
+        )
+        # we cross check the validated data with the AuthenticationService to verify the school credentials is in the database and if it is active, if not it will raise an exception
+        school = authentication_service.verify_school(
+            serializer.validated_data
+        )
+        # if the school is verified successfully, we return a response with a message and the school details
+        return Response(
+            {
+                "message": "School verified successfully.",
+                "school": {
+                    "id": school.id,
+                    "name": school.name,
+                    "email": school.email,
+                },
+            },
+            status=status.HTTP_200_OK,
         )
