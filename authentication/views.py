@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
+from .services import authentication_service
 from drf_spectacular.utils import extend_schema
 from .serializers import LoginSerializer, LogoutSerializer, CurrentSchoolSerializer, VerifySchoolSerializer
 
@@ -118,36 +119,43 @@ class LogoutAPIView(APIView):
             status=status.HTTP_200_OK
         )
         
-        
+# this is the current user view that returns the details of the currently authenticated user        
 class CurrentUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-
+# this is the get method that returns the details of the currently authenticated user
     def get(self, request):
         serializer = CurrentSchoolSerializer(request.user)
 
         return Response(serializer.data)
     
     
-
+# verify school view that verifies the school credentials
 class VerifySchoolView(APIView):
-    # In permissions everyone who can access the endpoint can login
+    # below means that anyone can access this endpoint without authentication
     permission_classes = [permissions.AllowAny]
+    # below is the post method that verifies the school credentials
     def post(self, request):
-        # used post for in login the user send sensitive information
-        
-        # creation of the serializer
-        # request.data comes from the client.
-        # request comes from us.
+        # here we verify the school credentials by using the VerifySchoolSerializer to validate the data sent from the frontend
         serializer = VerifySchoolSerializer(
             data=request.data
         )
-        # after finding the validation is valid, authenticate()
+        # we now verify if the serializer is valid, if not it will raise an exception
         serializer.is_valid(
             raise_exception=True
         )
-         # Extract the validated values.
-        email = serializer.validated_data["schoolId"]
-        password = serializer.validated_data["password"]
-
-        # The next step (our next lesson) is to ask the School model
-        # to verify whether this school exists and whether the password is correct.
+        # we cross check the validated data with the AuthenticationService to verify the school credentials is in the database and if it is active, if not it will raise an exception
+        school = authentication_service.verify_school(
+            serializer.validated_data
+        )
+        # if the school is verified successfully, we return a response with a message and the school details
+        return Response(
+            {
+                "message": "School verified successfully.",
+                "school": {
+                    "id": school.id,
+                    "name": school.name,
+                    "email": school.email,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
