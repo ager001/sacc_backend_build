@@ -134,6 +134,40 @@ class VerifySchoolView(APIView):
     # below means that anyone can access this endpoint without authentication
     permission_classes = [permissions.AllowAny]
     # below is the post method that verifies the school credentials
+    @extend_schema(
+    request=VerifySchoolSerializer,
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "school": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "email": {
+                            "type": "string"
+                        },
+                    },
+                },
+            },
+        },
+    },
+    summary="Verify School",
+    description="""
+    Verify that the school exists and the supplied
+    password is correct before proceeding to role
+    authentication.
+    """,
+    tags=["Authentication"],
+)
     def post(self, request):
         # here we verify the school credentials by using the VerifySchoolSerializer to validate the data sent from the frontend
         serializer = VerifySchoolSerializer(
