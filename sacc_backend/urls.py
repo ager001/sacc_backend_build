@@ -27,7 +27,7 @@ urlpatterns = [
     path("", home),
     path('admin/', admin.site.urls),
     path('api/schools/', include("schools.urls")),
-    path("auth/",include("authentication.urls")),
+    path('api/auth/',include("authentication.urls")),
     
     
      # OpenAPI schema
