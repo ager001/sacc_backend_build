@@ -54,8 +54,7 @@ class LogoutSerializer(serializers.Serializer):
     
     
     
-
-
+# serializer for current user view
 class CurrentSchoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
@@ -64,3 +63,12 @@ class CurrentSchoolSerializer(serializers.ModelSerializer):
             "name",
             "email",
         ]
+# class for verifying school email      
+class VerifySchoolSerializer(serializers.Serializer):
+    # validate the data sent from the frontend
+    email = serializers.EmailField()
+    password = serializers.CharField(
+        write_only=True,
+        style={"input_type": "password"},
+    )
+

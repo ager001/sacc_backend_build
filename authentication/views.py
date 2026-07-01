@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema
-from .serializers import LoginSerializer, LogoutSerializer, CurrentSchoolSerializer
+from .serializers import LoginSerializer, LogoutSerializer, CurrentSchoolSerializer, VerifySchoolSerializer
 
 # LoginAPIView endpoint gets created
 class LoginAPIView(APIView):
@@ -126,3 +126,28 @@ class CurrentUserView(APIView):
         serializer = CurrentSchoolSerializer(request.user)
 
         return Response(serializer.data)
+    
+    
+
+class VerifySchoolView(APIView):
+    # In permissions everyone who can access the endpoint can login
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        # used post for in login the user send sensitive information
+        
+        # creation of the serializer
+        # request.data comes from the client.
+        # request comes from us.
+        serializer = VerifySchoolSerializer(
+            data=request.data
+        )
+        # after finding the validation is valid, authenticate()
+        serializer.is_valid(
+            raise_exception=True
+        )
+         # Extract the validated values.
+        email = serializer.validated_data["schoolId"]
+        password = serializer.validated_data["password"]
+
+        # The next step (our next lesson) is to ask the School model
+        # to verify whether this school exists and whether the password is correct.
