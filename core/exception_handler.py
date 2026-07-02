@@ -28,3 +28,35 @@ def custom_exception_handler(exc, context):
             },
             status=status.HTTP_401_UNAUTHORIZED,
         )
+    if isinstance(exc, SchoolInactive):
+        return Response(
+            {
+                "detail": "School account is inactive."
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    if isinstance(exc, InvalidRoleCredentials):
+        return Response(
+            {
+                "detail": "Role credentials are invalid."
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    if isinstance(exc, InvalidOTP):
+        return Response(
+            {
+                "detail": "OTP is invalid."
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    if isinstance(exc, OTPExpired):
+        return Response(
+            {
+                "detail": "OTP has expired."
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+        
+    # should be outside the if statements to ensure that it is returned for all exceptions, 
+    # not just the custom ones.
+    return response
