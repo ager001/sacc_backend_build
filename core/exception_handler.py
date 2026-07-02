@@ -1,62 +1,135 @@
-from rest_framework.views import exception_handler
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import exception_handler
+
 from authentication.exceptions import (
-    InvalidSchoolCredentials,
-    SchoolInactive,
-    InvalidRoleCredentials,
     InvalidOTP,
+    InvalidRoleCredentials,
+    InvalidSchoolCredentials,
     OTPExpired,
+    SchoolInactive,
 )
 
-# custom function to handle exceptions and return appropriate responses
-# exc,context are the parameters that are passed to the function when an exception occurs
+# ============================================================================
+# Exception → HTTP Response Mapping
+# ============================================================================
+#
+# This dictionary acts as a translator between our business exceptions and the
+# HTTP responses expected by API clients.
+#
+# Key   -> Exception class raised by the service layer.
+# Value -> A tuple containing:
+#          1. The message to send to the client.
+#          2. The HTTP status code.
+#
+# Why use a mapping?
+#
+# Instead of writing a long chain of:
+#
+#     if isinstance(exc, ...)
+#
+# we centralize all exception definitions in one place.
+#
+# When a new business exception is introduced, we simply add one new entry
+# here without modifying the exception handler itself.
+#
+EXCEPTION_RESPONSE_MAPPING = {
+    # AUTHENTICATION EXCEPTIONS
+    InvalidSchoolCredentials: (
+        "Invalid email or password.",
+        status.HTTP_401_UNAUTHORIZED,
+    ),
+    SchoolInactive: (
+        "School account is inactive.",
+        status.HTTP_401_UNAUTHORIZED,
+    ),
+    InvalidRoleCredentials: (
+        "Role credentials are invalid.",
+        status.HTTP_401_UNAUTHORIZED,
+    ),
+    InvalidOTP: (
+        "OTP is invalid.",
+        status.HTTP_401_UNAUTHORIZED,
+    ),
+    OTPExpired: (
+        "OTP has expired.",
+        status.HTTP_401_UNAUTHORIZED,
+    ),
+}
+
+
 def custom_exception_handler(exc, context):
-    # we first call the default exception handler to get the standard error response from DRF
-    # if the exception is one of our custom exceptions, we return a custom response with a specific error message and status code
-    response = exception_handler(exc,context)
-    
-    # below shows that if the response doesn't match any of DRF's default exceptions, 
-    # we check if it matches any of our custom exceptions and return a custom response accordingly
-    # isinstance() is a built-in Python function that checks if an object is an instance of a specified class or a subclass thereof.
-    # it runs from the top of the function to the bottom, checking each exception in order. If it finds a match, it returns the corresponding response and exits the function. 
-    # If it doesn't find a match, it continues to the next exception until it reaches the end of the function.
-    if isinstance(exc, InvalidSchoolCredentials):
+    """
+    Centralized exception handler for the entire API.
+
+    Responsibility:
+    ----------------
+    Convert Python exceptions into standardized HTTP responses.
+
+    Workflow:
+    ---------
+    1. Give Django REST Framework the first opportunity to handle the exception.
+    2. If DRF cannot handle it, check whether it is one of our custom
+       business exceptions.
+    3. If it is, translate it into our standard API response format.
+    4. Otherwise, return DRF's original response.
+    """
+
+    # ------------------------------------------------------------------------
+    # Step 1:
+    # Let DRF attempt to handle the exception using its built-in exception
+    # handler.
+    #
+    # Examples include:
+    # - ValidationError
+    # - NotAuthenticated
+    # - PermissionDenied
+    # - NotFound
+    #
+    # If DRF recognizes the exception, it returns an appropriate Response.
+    # Otherwise, it returns None.
+    # ------------------------------------------------------------------------
+    response = exception_handler(exc, context)
+
+    # ------------------------------------------------------------------------
+    # Step 2:
+    # Check whether this exception exists in our custom mapping.
+    #
+    # type(exc) returns the exact class of the exception.
+    #
+    # Example:
+    #
+    #     SchoolInactive()
+    #
+    # becomes:
+    #
+    #     SchoolInactive
+    #
+    # which is then used to look up the corresponding response definition.
+    # ------------------------------------------------------------------------
+    exception_response = EXCEPTION_RESPONSE_MAPPING.get(type(exc))
+
+    # ------------------------------------------------------------------------
+    # Step 3:
+    # If the exception exists in our mapping, build a standardized HTTP
+    # response for the frontend.
+    # ------------------------------------------------------------------------
+    if exception_response:
+        message, status_code = exception_response
+
         return Response(
             {
-                "detail": "Invalid email or password."
+                "detail": message,
             },
-            status=status.HTTP_401_UNAUTHORIZED,
+            status=status_code,
         )
-    if isinstance(exc, SchoolInactive):
-        return Response(
-            {
-                "detail": "School account is inactive."
-            },
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-    if isinstance(exc, InvalidRoleCredentials):
-        return Response(
-            {
-                "detail": "Role credentials are invalid."
-            },
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-    if isinstance(exc, InvalidOTP):
-        return Response(
-            {
-                "detail": "OTP is invalid."
-            },
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-    if isinstance(exc, OTPExpired):
-        return Response(
-            {
-                "detail": "OTP has expired."
-            },
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-        
-    # should be outside the if statements to ensure that it is returned for all exceptions, 
-    # not just the custom ones.
+
+    # ------------------------------------------------------------------------
+    # Step 4:
+    # If the exception is neither one of DRF's built-in exceptions nor one of
+    # our custom business exceptions, return DRF's original response.
+    #
+    # Keeping this return outside the custom exception logic ensures that
+    # unknown exceptions continue to be handled normally.
+    # ------------------------------------------------------------------------
     return response
